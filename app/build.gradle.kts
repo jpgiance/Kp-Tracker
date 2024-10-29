@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.hilt)
 }
 
 android {
@@ -10,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.autonomy_lab.kptracker"
-        minSdk = 21
+        minSdk = 26
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"
@@ -30,12 +32,17 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
+
     }
     kotlinOptions {
         jvmTarget = "11"
     }
     buildFeatures {
         compose = true
+        buildConfig = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.1.0-beta03"
     }
 }
 
@@ -57,7 +64,28 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
+    // Coroutines
+    implementation(libs.kotlinx.coroutines.core)
+
+    // WorkManager
+    implementation (libs.androidx.work.runtime.ktx)
+
+    // Dependency Injection
+    implementation(libs.hilt)
+    implementation(libs.hilt.navigation.compose)
+    implementation (libs.androidx.hilt.work)
+    ksp(libs.hilt.compiler)
+
     // Widgets
     implementation(libs.androidx.glance.appwidget)
     implementation (libs.androidx.glance.material3)
+
+    // Networking
+    implementation(libs.retrofit)
+    implementation(libs.retrofit.moshi.converter)
+    implementation(libs.retrofit.logging.interceptor)
+
+    // Json
+    implementation(libs.moshi)
+    ksp(libs.moshi.codegen)
 }
