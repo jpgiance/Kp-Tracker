@@ -31,6 +31,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +44,7 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.autonomy_lab.kptracker.R
 import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
+import com.autonomy_lab.kptracker.ui.dialogs.InfoDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -56,6 +58,7 @@ fun MainScreen(
     val listIsEmpty by remember { derivedStateOf { list.isEmpty() } }
     val refreshing by viewModel.refreshing.collectAsState()
     val internetIsAvailable by viewModel.isInternetAvailable.collectAsState()
+    var openInfoDialog = remember { mutableStateOf(false) }
 
 
     Scaffold(
@@ -92,7 +95,7 @@ fun MainScreen(
                     }
                 },
                 actions = {
-                    IconButton(onClick = { /* do something */ }) {
+                    IconButton(onClick = { openInfoDialog.value = true }) {
                         Icon(
                             imageVector = Icons.Sharp.Settings,
                             contentDescription = "Localized description",
@@ -104,6 +107,13 @@ fun MainScreen(
             )
         },
         content = { innerPadding ->
+
+            InfoDialog(
+                innerPadding = innerPadding,
+                onDismiss = { openInfoDialog.value = false },
+                showDialog = openInfoDialog.value,
+                onConfirm = {  },
+            )
 
             if (internetIsAvailable){
                 if (listIsEmpty){
@@ -190,7 +200,7 @@ fun MessageDisplay(modifier: Modifier = Modifier, innerPadding: PaddingValues, t
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
             text = text,
-
+            color = Color.White
             )
     }
 }
