@@ -45,7 +45,7 @@ fun InfoDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
     title: String = "About this App",
-    innerPadding: PaddingValues
+//    innerPadding: PaddingValues
 ) {
 
     if (showDialog) {
@@ -56,7 +56,7 @@ fun InfoDialog(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(innerPadding)
+//                    .padding(innerPadding)
                     .padding(16.dp)
             ){
                 Box(

@@ -1,4 +1,4 @@
-package com.autonomy_lab.kptracker.ui.main
+package com.autonomy_lab.kptracker
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -22,7 +22,7 @@ import javax.inject.Inject
 import kotlin.random.Random
 
 @HiltViewModel
-class KpTrackerWidgetViewModel @Inject constructor(
+class MainViewModel @Inject constructor(
     private val noaaApi: NoaaApi,
     private val helper: WidgetHelper,
     internetConnectionObserver: InternetConnectionObserver
@@ -30,6 +30,9 @@ class KpTrackerWidgetViewModel @Inject constructor(
 
     private var _latestKpValue = MutableStateFlow<Double?>(null)
     val latestKpValue: StateFlow<Double?> get() = _latestKpValue
+
+    private var _latestKpValueTime = MutableStateFlow<String?>(null)
+    val latestKpValueTime: StateFlow<String?> get() = _latestKpValueTime
 
     private var _kpIndexList = MutableStateFlow<List<PlanetaryKIndexItem>>(emptyList())
     val kpIndexList : StateFlow<List<PlanetaryKIndexItem>> get() = _kpIndexList
@@ -70,6 +73,7 @@ class KpTrackerWidgetViewModel @Inject constructor(
                     val latestItem: PlanetaryKIndexItem? = _kpIndexList.value.maxByOrNull { it.timeTag }
 
                     _latestKpValue.value = latestItem?.kpIndex
+                    _latestKpValueTime.value = latestItem?.timeTag?.toStringForDisplay() ?: " --- "
 
                     KpRepo.updateKpIndexFromViewModel(latestItem?.kpIndex)
 //                    KpRepo.updateKpIndexFromViewModel(Random.nextDouble(90.0, 99.9))
