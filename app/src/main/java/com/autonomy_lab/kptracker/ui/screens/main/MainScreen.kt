@@ -1,6 +1,8 @@
 package com.autonomy_lab.kptracker.ui.screens.main
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,7 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -37,6 +41,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.autonomy_lab.kptracker.MainViewModel
 import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
+import com.autonomy_lab.kptracker.ui.components.ChartComponent
 import com.autonomy_lab.kptracker.ui.components.NoaaKpScale
 import com.autonomy_lab.kptracker.ui.dialogs.InfoDialog
 
@@ -61,6 +66,7 @@ fun MainScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
     ) {
         Box(
             modifier = Modifier
@@ -115,6 +121,14 @@ fun MainScreen(
 
             }
         }
+        Box(
+            modifier = Modifier
+                .padding(start = 8.dp, end = 16.dp),
+            contentAlignment = Alignment.Center
+        ){
+            ChartComponent(list = list)
+        }
+
         Box(
             modifier = Modifier
                 .fillMaxWidth()

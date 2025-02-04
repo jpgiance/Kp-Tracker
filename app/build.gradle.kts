@@ -96,4 +96,8 @@ dependencies {
 
     // Navigation
     implementation(libs.navigation.compose)
+
+    // YCharts
+    implementation("co.yml:ycharts:2.1.0")
+
 }
