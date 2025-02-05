@@ -1,5 +1,6 @@
 package com.autonomy_lab.kptracker.ui.components
 
+import android.content.res.Configuration
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Box
@@ -25,6 +26,7 @@ import com.autonomy_lab.kptracker.ui.theme.ScaleYellowStrong
 
 @Composable
 fun NoaaKpScale(modifier: Modifier = Modifier) {
+    val testColor = Color(0x80FFFF10)
     Row (
         modifier = Modifier
 
@@ -33,8 +35,8 @@ fun NoaaKpScale(modifier: Modifier = Modifier) {
         ScaleBox(color = ScaleYellow, text = "= 5(G1)")
         ScaleBox(color = ScaleYellowStrong, text = "= 6(G2)")
         ScaleBox(color = ScaleOrange, text = "= 7(G3)")
-        ScaleBox(color = ScaleRed, text = "= 8, 9-(G4)", sizeIncrement = 10)
-        ScaleBox(color = ScaleMaroon, text = "= 9(G5)")
+        ScaleBox(color = ScaleRed, text = "= 8, 9-(G4)", sizeIncrement = 10, textColor = ScaleYellow)
+        ScaleBox(color = ScaleMaroon, text = "= 9(G5)", textColor = ScaleYellow)
     }
 }
 
@@ -42,6 +44,7 @@ fun NoaaKpScale(modifier: Modifier = Modifier) {
 fun ScaleBox(
     modifier: Modifier = Modifier,
     color: Color,
+    textColor: Color = Color.Black,
     text: String,
     sizeIncrement: Int = 0
 ) {
@@ -56,17 +59,17 @@ fun ScaleBox(
         Text(
             text = text,
             fontSize = 12.sp,
-            color = Color.Black,
+            color = textColor,
             fontWeight = FontWeight.SemiBold
         )
     }
 }
 
-@Preview(showBackground = true, showSystemUi = true)
+@Preview(showBackground = true, showSystemUi = true, uiMode = Configuration.UI_MODE_NIGHT_UNDEFINED)
 @Composable
 private fun ScalePreview() {
     Box(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier.fillMaxSize().background(Color.Black),
         contentAlignment = Alignment.Center
     ){
         NoaaKpScale()

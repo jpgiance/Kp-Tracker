@@ -103,7 +103,7 @@ fun ChartComponent(
                         ),
                         SelectionHighlightPopUp()
                     ),
-                    Line(dataPoints = listOf(Point(0f, 9f)))
+                    Line(dataPoints = listOf(Point(0f, 0f),Point(0f, 9f)))
                 )
             ),
             backgroundColor = MaterialTheme.colorScheme.surface,
