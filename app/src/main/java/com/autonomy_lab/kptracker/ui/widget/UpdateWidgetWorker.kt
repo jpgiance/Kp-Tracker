@@ -16,8 +16,11 @@ class UpdateWidgetWorker (
 ): CoroutineWorker(context, workerParameters) {
 
     private val noaaApi = ApplicationModule().noaaApi(ApplicationModule().retrofit())
+    private val kpRepo = KpRepo.get(context)
 
     override suspend fun doWork(): Result {
+
+        Log.e("TAG", "doWork: Doing some work", )
 
         val response = noaaApi.fetchLastKpData()
 
@@ -35,7 +38,7 @@ class UpdateWidgetWorker (
 
                 val latestKpValue = latestItem?.kpIndex
 
-                KpRepo.updateKpIndexFromViewModel(latestKpValue)
+                KpReceiverRepo.updateKpIndexFromViewModel(latestKpValue)
 //                KpRepo.updateKpIndexFromViewModel(Random.nextDouble(1.0, 10.0))  // For testing only
                 KpTrackerWidget().updateAll(context)
 

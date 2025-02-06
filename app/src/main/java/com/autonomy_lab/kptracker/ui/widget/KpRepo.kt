@@ -1,62 +1,72 @@
 package com.autonomy_lab.kptracker.ui.widget
 
+import android.content.Context
 import android.util.Log
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.emptyPreferences
+import androidx.glance.appwidget.updateAll
+import androidx.lifecycle.viewModelScope
+import com.autonomy_lab.kptracker.data.DataStoreManager
 import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
+import com.autonomy_lab.kptracker.data.PreferenceKeys
+import com.autonomy_lab.kptracker.data.SettingsData
+import com.autonomy_lab.kptracker.data.SettingsData.Companion.notificationThresholdDefault
+import com.autonomy_lab.kptracker.data.SettingsData.Companion.notificationsEnabledDefault
+import com.autonomy_lab.kptracker.data.SettingsData.Companion.widgetThresholdHighDefault
+import com.autonomy_lab.kptracker.data.SettingsData.Companion.widgetThresholdLowDefault
 import com.autonomy_lab.kptracker.data.network.PlanetaryKIndexListSchema
 import com.autonomy_lab.kptracker.data.network.toPlanetaryKIndexItemList
 import com.autonomy_lab.kptracker.di.ApplicationModule
+import dagger.hilt.EntryPoint
+import dagger.hilt.EntryPoints
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import javax.inject.Inject
 import kotlin.random.Random
 
-object KpRepo {
+class KpRepo @Inject constructor(
+    @ApplicationContext private val appContext: Context,
+    private val dataStoreManager: DataStoreManager
+) {
 
-    private val noaaApi = ApplicationModule().noaaApi(ApplicationModule().retrofit())
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface KpRepoEntryPoint{
+        fun kpRepo(): KpRepo
+    }
 
-    private var _latestKpValue = MutableStateFlow<Double?>(null)
-    val latestKpValue: StateFlow<Double?> get() = _latestKpValue
 
-    private var _kpIndexList = MutableStateFlow<List<PlanetaryKIndexItem>>(emptyList())
-    val kpIndexList : StateFlow<List<PlanetaryKIndexItem>> get() = _kpIndexList
-
-    suspend fun fetchKpIndexList(){
-
-        withContext(Dispatchers.IO){
-
-            try {
-
-                val response = noaaApi.fetchLastKpData()
-
-                if (response.isSuccessful){
-
-                    val schema = response.body()?.let { PlanetaryKIndexListSchema(it) }
-
-                    _kpIndexList.value = schema?.toPlanetaryKIndexItemList() ?: emptyList()
-
-                    val latestItem: PlanetaryKIndexItem? = _kpIndexList.value.maxByOrNull { it.timeTag }
-
-                    _latestKpValue.value = latestItem?.kpIndex
-                }else{
-                    Log.e("TAG", "doWork: Error Fetching data: Response Unsuccessful"  )
-                }
-
-            }catch (e: Exception){
-                Log.e("TAG", "doWork: Error Fetching data: \n ${e.message}"  )
-            }
-
+    companion object{
+        fun get(applicationContext: Context): KpRepo{
+            val kpRepoEntryPoint: KpRepoEntryPoint =
+                EntryPoints.get(
+                    applicationContext,
+                    KpRepoEntryPoint::class.java,
+                )
+            return kpRepoEntryPoint.kpRepo()
         }
 
-    }
-
-    fun updateKpIndexFromViewModel(newKp: Double?){
-        _latestKpValue.value = newKp
 
     }
 
-     fun test(){
-        _latestKpValue.value = Random.nextDouble(1.0, 10.0)
-
+    suspend fun valueChanged(){
+        KpTrackerWidget().updateAll(appContext)
     }
+
+    fun loadSettings(): Flow<SettingsData>{
+        return dataStoreManager.settingsState
+    }
+
+
 }

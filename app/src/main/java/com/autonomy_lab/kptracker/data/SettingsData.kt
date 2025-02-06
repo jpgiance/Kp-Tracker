@@ -1,0 +1,28 @@
+package com.autonomy_lab.kptracker.data
+
+import androidx.datastore.preferences.core.booleanPreferencesKey
+import androidx.datastore.preferences.core.doublePreferencesKey
+data class SettingsData(
+    val notificationsEnabled: Boolean = notificationsEnabledDefault,
+    val notificationThreshold: Double = notificationThresholdDefault,
+    val widgetThresholdLow: Double = widgetThresholdLowDefault,
+    val widgetThresholdHigh: Double = widgetThresholdHighDefault
+){
+
+    companion object{
+        const val notificationsEnabledDefault = false
+        const val notificationThresholdDefault = 4.0
+        const val widgetThresholdLowDefault = 3.0
+        const val widgetThresholdHighDefault = 5.0
+    }
+}
+
+// Preferences Keys
+object PreferenceKeys {
+    val notificationsEnabled = booleanPreferencesKey("notifications_enabled")
+    val notificationThreshold = doublePreferencesKey("notification_threshold")
+    val widgetThresholdLow = doublePreferencesKey("widget_threshold_low")
+    val widgetThresholdHigh = doublePreferencesKey("widget_threshold_high")
+
+
+}

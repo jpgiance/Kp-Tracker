@@ -1,6 +1,7 @@
 package com.autonomy_lab.kptracker.ui.widget
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -35,15 +36,24 @@ import androidx.glance.layout.wrapContentHeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.autonomy_lab.kptracker.MainActivity
+import com.autonomy_lab.kptracker.data.SettingsData
+import com.autonomy_lab.kptracker.ui.theme.WidgetGreen
+import com.autonomy_lab.kptracker.ui.theme.WidgetOrange
+import com.autonomy_lab.kptracker.ui.theme.WidgetRed
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-class KpTrackerWidget : GlanceAppWidget() {
+class KpTrackerWidget(
+
+) : GlanceAppWidget() {
+
+
 
     companion object {
         private val SMALL_SQUARE = DpSize(100.dp, 100.dp)
         private val HORIZONTAL_RECTANGLE = DpSize(250.dp, 100.dp)
         private val BIG_SQUARE = DpSize(250.dp, 250.dp)
+
     }
 
     override val sizeMode = SizeMode.Responsive(
@@ -56,31 +66,37 @@ class KpTrackerWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
 
+        val kpRepo = KpRepo.get(context)
 
+        Log.e("TAG", "provideGlance: ", )
         provideContent {
             // create your AppWidget here
-            MyContent()
+            MyContent(kpRepo)
         }
     }
 
 
     @Composable
-    public fun MyContent() {
+    fun MyContent(kpRepo: KpRepo) {
+        Log.e("TAG", "MyContent: ", )
+
 
         val size = LocalSize.current
-        val latestKp by KpRepo.latestKpValue.collectAsState()
+        val latestKp by KpReceiverRepo.latestKpValue.collectAsState()
+        val settingsData = kpRepo.loadSettings().collectAsState(SettingsData())
 
         val context = LocalContext.current
         val scope = rememberCoroutineScope()
         val updateKp: () -> Unit = {
             scope.launch {
-                KpRepo.fetchKpIndexList()
+                KpReceiverRepo.fetchKpIndexList()
                 KpTrackerWidget().updateAll(context)
             }
         }
+
         val test: () -> Unit = {
             scope.launch {
-                KpRepo.test()
+                KpReceiverRepo.test()
                 KpTrackerWidget().updateAll(context)
             }
         }
@@ -91,21 +107,25 @@ class KpTrackerWidget : GlanceAppWidget() {
 
         latestKp?.let {
             when {
-                it < 4 -> {
-                    backgroundColor = Color(0xFF0a7025)
+                it < settingsData.value.widgetThresholdLow -> {
+                    backgroundColor = WidgetGreen
                     widgetTitle = "QUIET"
                 } // Green color for value < 4
-                it > 4 -> {
-                    backgroundColor = Color(0xFFad2a2a)
+                it > settingsData.value.widgetThresholdHigh -> {
+                    backgroundColor = WidgetRed
                     widgetTitle = "STORM"
                 } // Red color for value > 4
-                else  -> {
-                    backgroundColor = Color(0xFF6e4700)
+                it >= settingsData.value.widgetThresholdLow && it <= settingsData.value.widgetThresholdHigh ->{
+                    backgroundColor = WidgetOrange
                     widgetTitle = "UNSETTLED"
+                } // Orange color for value = 4
+                else  -> {
+                    backgroundColor = Color.DarkGray
+                    widgetTitle = "UNKNOWN"
                 } // Orange color for value = 4
             }
         } ?: {
-            backgroundColor = Color(0xFF6e4700)
+            backgroundColor = WidgetOrange
             widgetTitle = "---"
         }
 
@@ -146,6 +166,7 @@ class KpTrackerWidget : GlanceAppWidget() {
                     ){
                         Text(
                             text = "kp: $latestKp",
+//                            text = "kp: ${settingsData.value.widgetThresholdLow}",
                             style = TextStyle(color = GlanceTheme.colors.onSurface, fontSize = 18.sp),
                             maxLines = 1,
                             modifier = GlanceModifier.padding(start = 10.dp, top = 3.dp, end = 10.dp, bottom = 3.dp)
@@ -169,6 +190,14 @@ class WidgetHelper @Inject constructor(private val context: Context){
 
     suspend fun updateKpWidget(){
         KpTrackerWidget().updateAll(context = context)
+        Log.e("TAG", "updateKpWidget: ", )
+
+//        val manager = GlanceAppWidgetManager(context)
+//        val widget = KpTrackerWidget()
+//        val glanceIds = manager.getGlanceIds(widget.javaClass)
+//        glanceIds.forEach { glanceId ->
+//            widget.update(context, glanceId)
+//        }
     }
 }
 

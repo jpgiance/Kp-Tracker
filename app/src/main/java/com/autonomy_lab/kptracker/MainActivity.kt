@@ -18,6 +18,7 @@ import com.autonomy_lab.kptracker.ui.navigation.HelpAndFeedbackRoute
 import com.autonomy_lab.kptracker.ui.navigation.MainScreenRoute
 import com.autonomy_lab.kptracker.ui.navigation.RawDataScreenRoute
 import com.autonomy_lab.kptracker.ui.navigation.ScreenNavigator
+import com.autonomy_lab.kptracker.ui.navigation.SettingsScreenRoute
 import com.autonomy_lab.kptracker.ui.theme.KpTrackerTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
@@ -55,6 +56,10 @@ class MainActivity() : ComponentActivity() {
                             },
                             onHelpAndFeedbackNavClicked = {
                                 navController.navigate(HelpAndFeedbackRoute)
+                                scope.launch {drawerState.close()}
+                            },
+                            onSettingsNavClicked = {
+                                navController.navigate(SettingsScreenRoute)
                                 scope.launch {drawerState.close()}
                             },
                         )

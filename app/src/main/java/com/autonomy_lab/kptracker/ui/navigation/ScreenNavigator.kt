@@ -11,6 +11,7 @@ import com.autonomy_lab.kptracker.MainViewModel
 import com.autonomy_lab.kptracker.ui.screens.help_feedback.HelpAndFeedbackScreen
 import com.autonomy_lab.kptracker.ui.screens.main.MainScreen
 import com.autonomy_lab.kptracker.ui.screens.rawdata.RawDataScreen
+import com.autonomy_lab.kptracker.ui.screens.settings.SettingsScreen
 
 @Composable
 fun ScreenNavigator(
@@ -36,6 +37,10 @@ fun ScreenNavigator(
 
         composable<HelpAndFeedbackRoute> {
             HelpAndFeedbackScreen()
+        }
+
+        composable<SettingsScreenRoute> {
+            SettingsScreen()
         }
     }
 }

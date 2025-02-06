@@ -3,11 +3,12 @@ package com.autonomy_lab.kptracker
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.autonomy_lab.kptracker.Utils.InternetConnectionObserver
+import com.autonomy_lab.kptracker.utils.InternetConnectionObserver
 import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
 import com.autonomy_lab.kptracker.data.network.PlanetaryKIndexListSchema
 import com.autonomy_lab.kptracker.data.network.toPlanetaryKIndexItemList
 import com.autonomy_lab.kptracker.network.NoaaApi
+import com.autonomy_lab.kptracker.ui.widget.KpReceiverRepo
 import com.autonomy_lab.kptracker.ui.widget.KpRepo
 import com.autonomy_lab.kptracker.ui.widget.WidgetHelper
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -25,6 +26,7 @@ import kotlin.random.Random
 class MainViewModel @Inject constructor(
     private val noaaApi: NoaaApi,
     private val helper: WidgetHelper,
+    private val kpRepo: KpRepo,
     internetConnectionObserver: InternetConnectionObserver
 ): ViewModel() {
 
@@ -75,9 +77,10 @@ class MainViewModel @Inject constructor(
                     _latestKpValue.value = latestItem?.kpIndex
                     _latestKpValueTime.value = latestItem?.timeTag?.toStringForDisplay() ?: " --- "
 
-                    KpRepo.updateKpIndexFromViewModel(latestItem?.kpIndex)
+                    KpReceiverRepo.updateKpIndexFromViewModel(latestItem?.kpIndex)
+                    kpRepo.valueChanged()
 //                    KpRepo.updateKpIndexFromViewModel(Random.nextDouble(90.0, 99.9))
-                    helper.updateKpWidget()
+//                    helper.updateKpWidget()
 
                 }else{
                     Log.e("TAG", "doWork: Error Fetching data: Response Unsuccessful"  )

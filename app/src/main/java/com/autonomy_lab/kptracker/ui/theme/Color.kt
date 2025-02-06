@@ -17,3 +17,7 @@ val ScaleYellowStrong = Color(0x80F2CF5A)
 val ScaleOrange = Color(0x80FFAE00)
 val ScaleRed = Color(0x80D50000)
 val ScaleMaroon = Color(0x809C0000)
+
+val WidgetGreen = Color(0xFF0a7025)
+val WidgetOrange = Color(0xFF6e4700)
+val WidgetRed = Color(0xFFad2a2a)

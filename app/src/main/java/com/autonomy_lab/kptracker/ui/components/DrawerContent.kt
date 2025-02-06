@@ -33,6 +33,7 @@ fun DrawerContent(
     onRawDataNavClicked: () -> Unit,
     onHomeNavClicked: () -> Unit,
     onHelpAndFeedbackNavClicked: () -> Unit,
+    onSettingsNavClicked: () -> Unit,
 ) {
     ModalDrawerSheet {
         Image(
@@ -71,7 +72,7 @@ fun DrawerContent(
                 label = { Text("Settings") },
                 selected = false,
                 icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
-                onClick = { /* Handle click */ }
+                onClick = onSettingsNavClicked
             )
             NavigationDrawerItem(
                 label = { Text("Help and feedback") },

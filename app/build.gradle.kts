@@ -71,6 +71,9 @@ dependencies {
     // WorkManager
     implementation (libs.androidx.work.runtime.ktx)
 
+    // Datastore
+    implementation("androidx.datastore:datastore-preferences:1.1.2")
+
     // Dependency Injection
     implementation(libs.hilt)
     implementation(libs.hilt.navigation.compose)
