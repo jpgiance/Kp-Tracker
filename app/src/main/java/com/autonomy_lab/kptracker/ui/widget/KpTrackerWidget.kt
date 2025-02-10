@@ -67,6 +67,7 @@ class KpTrackerWidget(
     override suspend fun provideGlance(context: Context, id: GlanceId) {
 
         val kpRepo = KpRepo.get(context)
+//        kpRepo.incrementNumb()
 
         Log.e("TAG", "provideGlance: ", )
         provideContent {
@@ -84,6 +85,7 @@ class KpTrackerWidget(
         val size = LocalSize.current
         val latestKp by KpReceiverRepo.latestKpValue.collectAsState()
         val settingsData = kpRepo.loadSettings().collectAsState(SettingsData())
+        val numb by kpRepo.numb.collectAsState()
 
         val context = LocalContext.current
         val scope = rememberCoroutineScope()

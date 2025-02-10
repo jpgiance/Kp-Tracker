@@ -1,7 +1,17 @@
 package com.autonomy_lab.kptracker.ui.screens.settings
 
+import android.Manifest
 import android.annotation.SuppressLint
+import android.app.Activity
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
+import android.util.Log
 import android.view.RoundedCorner
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -24,6 +34,7 @@ import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -37,8 +48,14 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
+import androidx.core.app.ActivityCompat
+import androidx.core.app.ActivityCompat.shouldShowRequestPermissionRationale
+import androidx.core.app.NotificationManagerCompat
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.autonomy_lab.kptracker.ui.components.UserInputDialog
+import com.autonomy_lab.kptracker.ui.dialogs.LocationPermissionTextProvider
+import com.autonomy_lab.kptracker.ui.dialogs.NotificationPermissionTextProvider
+import com.autonomy_lab.kptracker.ui.dialogs.PermissionDialog
 import com.autonomy_lab.kptracker.ui.theme.WidgetGreen
 import com.autonomy_lab.kptracker.ui.theme.WidgetOrange
 import com.autonomy_lab.kptracker.ui.theme.WidgetRed
@@ -51,11 +68,59 @@ fun SettingsScreen(
 ) {
 
     val context = LocalContext.current
-
+    val notificationManager = remember { NotificationManagerCompat.from(context) }
+    val isNotificationPermissionPending = remember{ mutableStateOf(false)}
 
     // Collect the state from the ViewModel
     val settingsData by settingsViewModel.settingsState.collectAsState()
     val settingsContentDescription = "Settings Screen"
+
+    val dialogQueue = settingsViewModel.visiblePermissionDialogQueue
+
+    val permissionsToRequest = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            arrayOf(
+                Manifest.permission.POST_NOTIFICATIONS,
+//                Manifest.permission.ACCESS_COARSE_LOCATION,
+//                Manifest.permission.ACCESS_FINE_LOCATION,
+            )
+        }
+        else {
+            arrayOf(
+//                Manifest.permission.ACCESS_COARSE_LOCATION,
+//                Manifest.permission.ACCESS_FINE_LOCATION,
+            )
+        }
+    } else {
+        arrayOf(
+//            Manifest.permission.ACCESS_COARSE_LOCATION,
+//            Manifest.permission.ACCESS_FINE_LOCATION,
+        )
+    }
+
+    val multiplePermissionResultLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions(),
+        onResult = { perms ->
+            var allPermissionsGranted = true
+            permissionsToRequest.forEach { permission ->
+                settingsViewModel.onPermissionResult(
+                    permission = permission,
+                    isGranted = perms[permission] == true
+                )
+
+                if (perms[permission] != true) allPermissionsGranted = false
+            }
+
+//                        if (allPermissionsGranted) startMainService()
+            isNotificationPermissionPending.value = false
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+                perms[Manifest.permission.POST_NOTIFICATIONS]?.let {
+                    settingsViewModel.updateNotificationsEnabled(it)
+                }
+            }
+
+        }
+    )
 
 
     LazyColumn(
@@ -64,11 +129,35 @@ fun SettingsScreen(
         contentPadding = PaddingValues(16.dp)
     ) {
         item {
-            Text("Notifications", style = MaterialTheme.typography.titleLarge)
+            Text("Notifications", style = MaterialTheme.typography.titleLarge, )
             NotificationSettings(
                 notificationsEnabled = settingsData.notificationsEnabled,
                 notificationThreshold = settingsData.notificationThreshold,
-                onNotificationsEnabledChange = { settingsViewModel.updateNotificationsEnabled(it) },
+                onNotificationsEnabledChange = {
+                    Log.e("TAG", "SettingsScreen: counter: ${settingsData.testInt}" )
+                    Log.e("TAG", "SettingsScreen: changed to $it" )
+                    if (it){
+                        Log.e("TAG", "SettingsScreen: launching permissions" )
+                        isNotificationPermissionPending.value = true
+                        multiplePermissionResultLauncher.launch(permissionsToRequest)
+
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                            if(notificationManager.areNotificationsEnabled() && ActivityCompat.checkSelfPermission(
+                                context,
+                                Manifest.permission.POST_NOTIFICATIONS
+                            ) == PackageManager.PERMISSION_GRANTED){
+                                settingsViewModel.updateNotificationsEnabled(it)
+                            }
+                        } else {
+                            settingsViewModel.updateNotificationsEnabled(it)
+                        }
+
+
+                    } else{
+                        settingsViewModel.updateNotificationsEnabled(it)
+                    }
+                                               },
                 onNotificationThresholdChange = { settingsViewModel.updateNotificationThreshold(it) }
             )
             HorizontalDivider(Modifier.height(32.dp))
@@ -82,6 +171,42 @@ fun SettingsScreen(
             )
         }
     }
+
+    dialogQueue
+        .reversed()
+        .forEach { permission ->
+            PermissionDialog(
+                permissionTextProvider = when (permission) {
+                    Manifest.permission.POST_NOTIFICATIONS -> {
+                        NotificationPermissionTextProvider()
+                    }
+                    Manifest.permission.ACCESS_FINE_LOCATION -> {
+                        LocationPermissionTextProvider()
+                    }
+                    Manifest.permission.ACCESS_COARSE_LOCATION -> {
+                        LocationPermissionTextProvider()
+                    }
+                    else -> return@forEach
+                },
+                isPermanentlyDeclined = !shouldShowRequestPermissionRationale(
+                    context as Activity,
+                    permission
+                ),
+                onDismiss = settingsViewModel::dismissDialog,
+                onOkClick = {
+                    settingsViewModel.dismissDialog()
+                    multiplePermissionResultLauncher.launch(
+                        arrayOf(permission)
+                    )
+                },
+                onGoToAppSettingsClick = {
+                    Intent(
+                        Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                        Uri.fromParts("package", context.packageName, null)
+                    ).also(context::startActivity)
+                }
+            )
+        }
 
 }
 
@@ -136,7 +261,9 @@ fun NotificationSettings(
                         .clip(RoundedCornerShape(5.dp))
                         .background(Color.LightGray)
                         .clickable(onClick = {
-                            oldValueInputDialog.floatValue = notificationThreshold.toFloat().roundToDecimal(1)
+                            oldValueInputDialog.floatValue = notificationThreshold
+                                .toFloat()
+                                .roundToDecimal(1)
                             titleInputDialog.value = "Notification Threshold"
                             showInputDialog.value = true
                         })
@@ -214,7 +341,9 @@ fun WidgetSettings(
                         .background(Color.LightGray)
                         .clickable(onClick = {
                             widgetValueType.value = WidgetValueType.WIDGET_THRESHOLD_LOW
-                            oldValueInputDialog.floatValue = widgetThresholdLow.toFloat().roundToDecimal(1)
+                            oldValueInputDialog.floatValue = widgetThresholdLow
+                                .toFloat()
+                                .roundToDecimal(1)
                             showInputDialog.value = true
                         })
                 ){
@@ -248,7 +377,9 @@ fun WidgetSettings(
                         .background(Color.LightGray)
                         .clickable(onClick = {
                             widgetValueType.value = WidgetValueType.WIDGET_THRESHOLD_HIGH
-                            oldValueInputDialog.floatValue = widgetThresholdHigh.toFloat().roundToDecimal(1)
+                            oldValueInputDialog.floatValue = widgetThresholdHigh
+                                .toFloat()
+                                .roundToDecimal(1)
                             showInputDialog.value = true
                         })
                 ){
@@ -278,3 +409,4 @@ enum class WidgetValueType{
     WIDGET_THRESHOLD_HIGH,
     NONE
 }
+

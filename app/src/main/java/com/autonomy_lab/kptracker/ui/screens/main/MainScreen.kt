@@ -1,6 +1,8 @@
 package com.autonomy_lab.kptracker.ui.screens.main
 
+import android.util.Log
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
@@ -108,7 +110,11 @@ fun MainScreen(
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(5.dp))
-                        .background(Color.LightGray),
+                        .background(Color.LightGray)
+                        .clickable {
+                            viewModel.sendNotification("test title", "test message")
+                            Log.e("TAG", "MainScreen: notify me", )
+                        },
                     contentAlignment = Alignment.Center
                 ){
                     Text(

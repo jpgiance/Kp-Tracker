@@ -3,11 +3,14 @@ package com.autonomy_lab.kptracker
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.autonomy_lab.kptracker.data.DataStoreManager
 import com.autonomy_lab.kptracker.utils.InternetConnectionObserver
 import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
+import com.autonomy_lab.kptracker.data.SettingsData
 import com.autonomy_lab.kptracker.data.network.PlanetaryKIndexListSchema
 import com.autonomy_lab.kptracker.data.network.toPlanetaryKIndexItemList
 import com.autonomy_lab.kptracker.network.NoaaApi
+import com.autonomy_lab.kptracker.notifications.NotificationProvider
 import com.autonomy_lab.kptracker.ui.widget.KpReceiverRepo
 import com.autonomy_lab.kptracker.ui.widget.KpRepo
 import com.autonomy_lab.kptracker.ui.widget.WidgetHelper
@@ -27,6 +30,8 @@ class MainViewModel @Inject constructor(
     private val noaaApi: NoaaApi,
     private val helper: WidgetHelper,
     private val kpRepo: KpRepo,
+    private val notificationProvider: NotificationProvider,
+    private val dataStoreManager: DataStoreManager,
     internetConnectionObserver: InternetConnectionObserver
 ): ViewModel() {
 
@@ -42,6 +47,8 @@ class MainViewModel @Inject constructor(
     private var _refreshing = MutableStateFlow<Boolean>(false)
     val refreshing: StateFlow<Boolean> get() = _refreshing
 
+    val settingsState: StateFlow<SettingsData> = dataStoreManager.settingsState
+
     val isInternetAvailable = internetConnectionObserver.isInternetAvailable.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000L),
@@ -50,6 +57,10 @@ class MainViewModel @Inject constructor(
 
     init {
         fetchKpIndexList()
+    }
+
+    companion object{
+        var alreadyCheckedIfNotificationNeeded = false
     }
 
     fun fetchKpIndexList(){
@@ -79,6 +90,8 @@ class MainViewModel @Inject constructor(
 
                     KpReceiverRepo.updateKpIndexFromViewModel(latestItem?.kpIndex)
                     kpRepo.valueChanged()
+
+
 //                    KpRepo.updateKpIndexFromViewModel(Random.nextDouble(90.0, 99.9))
 //                    helper.updateKpWidget()
 
@@ -95,6 +108,26 @@ class MainViewModel @Inject constructor(
 
         }
 
+    }
+
+    private fun checkIfNotificationIsNeeded() {
+        alreadyCheckedIfNotificationNeeded = true
+
+        if (settingsState.value.notificationsEnabled){
+            latestKpValue.value.let { value ->
+                if (value != null) {
+                    if (value >= settingsState.value.notificationThreshold){
+                        sendNotification(title = "Kp index Notification threshold met", message = "Kp index is $value")
+                    }
+                }
+            }
+
+        }
+    }
+
+
+    fun sendNotification(title: String, message: String){
+        notificationProvider.sendNotification(title, message)
     }
 
     fun test(){

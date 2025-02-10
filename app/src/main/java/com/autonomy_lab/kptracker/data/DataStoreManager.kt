@@ -1,6 +1,7 @@
 package com.autonomy_lab.kptracker.data
 
 import android.content.Context
+import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
@@ -57,7 +58,8 @@ class DataStoreManager(
                         notificationsEnabled = preferences[PreferenceKeys.notificationsEnabled] ?: notificationsEnabledDefault,
                         notificationThreshold = preferences[PreferenceKeys.notificationThreshold] ?: notificationThresholdDefault,
                         widgetThresholdLow = preferences[PreferenceKeys.widgetThresholdLow] ?: widgetThresholdLowDefault,
-                        widgetThresholdHigh = preferences[PreferenceKeys.widgetThresholdHigh] ?: widgetThresholdHighDefault
+                        widgetThresholdHigh = preferences[PreferenceKeys.widgetThresholdHigh] ?: widgetThresholdHighDefault,
+                        testInt = preferences[PreferenceKeys.testInt] ?: 0
                     )
                 }
                 .collect { settings ->
@@ -94,6 +96,15 @@ class DataStoreManager(
         withContext(Dispatchers.IO) {
             dataStore.edit { preferences ->
                 preferences[PreferenceKeys.widgetThresholdHigh] = threshold
+            }
+        }
+    }
+
+    suspend fun incrementWidgetTestInt() {
+        withContext(Dispatchers.IO) {
+            dataStore.edit { preferences ->
+                Log.e("TAG", "incrementWidgetTestInt: yahoooooooooooooooooooo  counter = ${settingsState.value.testInt}   notf threshold = ${settingsState.value.notificationThreshold}", )
+                preferences[PreferenceKeys.testInt] =  settingsState.value.testInt + 1
             }
         }
     }
