@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
@@ -70,6 +71,9 @@ dependencies {
     // WorkManager
     implementation (libs.androidx.work.runtime.ktx)
 
+    // Datastore
+    implementation("androidx.datastore:datastore-preferences:1.1.2")
+
     // Dependency Injection
     implementation(libs.hilt)
     implementation(libs.hilt.navigation.compose)
@@ -88,4 +92,22 @@ dependencies {
     // Json
     implementation(libs.moshi)
     ksp(libs.moshi.codegen)
+
+    // Serialization (Also used for Navigation)
+    implementation(libs.kotlinx.serialization.json)
+
+
+    // Navigation
+    implementation(libs.navigation.compose)
+
+    // YCharts
+    implementation("co.yml:ycharts:2.1.0")
+
+    // User Play Store Review
+    implementation("com.google.android.play:review:2.0.2")
+    implementation("com.google.android.play:review-ktx:2.0.2")
+
+    // In-App Updates
+    implementation("com.google.android.play:app-update:2.1.0")
+    implementation("com.google.android.play:app-update-ktx:2.1.0")
 }

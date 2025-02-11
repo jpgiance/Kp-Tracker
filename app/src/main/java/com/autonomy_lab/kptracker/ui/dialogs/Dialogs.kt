@@ -1,8 +1,10 @@
 package com.autonomy_lab.kptracker.ui.dialogs
 
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -45,7 +47,7 @@ fun InfoDialog(
     onDismiss: () -> Unit,
     onConfirm: (String) -> Unit,
     title: String = "About this App",
-    innerPadding: PaddingValues
+//    innerPadding: PaddingValues
 ) {
 
     if (showDialog) {
@@ -56,7 +58,7 @@ fun InfoDialog(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(innerPadding)
+//                    .padding(innerPadding)
                     .padding(16.dp)
             ){
                 Box(
@@ -144,7 +146,8 @@ fun InfoDialog(
 
 
 @Composable
-fun LinkedText(text: String, url: String, modifier: Modifier = Modifier) {
+fun LinkedText(text: String, url: String, clickableAction: (() -> Unit)? = null) {
+
 
     val annotatedLinkString: AnnotatedString = remember {
         buildAnnotatedString {
@@ -172,13 +175,24 @@ fun LinkedText(text: String, url: String, modifier: Modifier = Modifier) {
                 append(text)
             }
 
-            withLink(LinkAnnotation.Url(url = url)) {
+            if (clickableAction == null){
+                withLink(LinkAnnotation.Url(url = url)) {
+                    withStyle(
+                        style = styleCenter
+                    ) {
+                        append(url)
+                    }
+                }
+            }else{
+
                 withStyle(
                     style = styleCenter
                 ) {
                     append(url)
                 }
+
             }
+
 
             withStyle(
                 style = style
@@ -188,10 +202,20 @@ fun LinkedText(text: String, url: String, modifier: Modifier = Modifier) {
         }
     }
 
-    Text(
-        text = annotatedLinkString
-    )
+    if (clickableAction == null){
+        Text(
+            text = annotatedLinkString
+        )
+    }else{
+        Text(
+            text = annotatedLinkString,
+            modifier = Modifier.clickable(enabled = true, onClick = clickableAction)
+        )
+    }
+
 }
+
+
 
 
 

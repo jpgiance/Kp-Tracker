@@ -1,7 +1,6 @@
 package com.autonomy_lab.kptracker.data.network
 
-import android.util.Log
-import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
+import com.autonomy_lab.kptracker.data.models.PlanetaryKIndexItem
 import com.squareup.moshi.JsonClass
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter

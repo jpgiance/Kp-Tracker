@@ -1,10 +1,15 @@
 package com.autonomy_lab.kptracker.di
 
 import android.content.Context
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.preferencesDataStore
 import com.autonomy_lab.kptracker.BuildConfig
-import com.autonomy_lab.kptracker.Utils.Constants
-import com.autonomy_lab.kptracker.Utils.InternetConnectionObserver
+import com.autonomy_lab.kptracker.data.DataStoreManager
+import com.autonomy_lab.kptracker.utils.Constants
+import com.autonomy_lab.kptracker.utils.InternetConnectionObserver
 import com.autonomy_lab.kptracker.network.NoaaApi
+import com.autonomy_lab.kptracker.notifications.NotificationProvider
 import com.autonomy_lab.kptracker.ui.widget.WidgetHelper
 import dagger.Module
 import dagger.Provides
@@ -16,6 +21,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import javax.inject.Singleton
+import kotlin.contracts.contract
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -56,4 +62,25 @@ class ApplicationModule {
     fun internetConnectionObserver(@ApplicationContext context: Context): InternetConnectionObserver {
         return InternetConnectionObserver(context)
     }
+
+    @Singleton
+    @Provides
+    fun dataStoreManager(@ApplicationContext context: Context): DataStoreManager{
+        return DataStoreManager(context = context)
+    }
+
+    @Provides
+    @Singleton
+    fun notificationProvider(@ApplicationContext context: Context): NotificationProvider{
+        return NotificationProvider(context = context)
+    }
+
+
+//    @Singleton
+//    private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "settings")
+//
+//    @Provides
+//    fun provideDataStore(@ApplicationContext context: Context): DataStore<Preferences>{
+//        return context.dataStore
+//    }
 }

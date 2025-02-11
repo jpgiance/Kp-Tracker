@@ -1,4 +1,4 @@
-package com.autonomy_lab.kptracker.data
+package com.autonomy_lab.kptracker.data.models
 
 import java.time.LocalDateTime
 
@@ -8,3 +8,5 @@ data class PlanetaryKIndexItem(
     val aRunning: Int,
     val stationCount: Int
 )
+
+

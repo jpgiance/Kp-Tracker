@@ -1,4 +1,4 @@
-package com.autonomy_lab.kptracker.Utils
+package com.autonomy_lab.kptracker.utils
 
 import android.content.Context
 import android.net.ConnectivityManager

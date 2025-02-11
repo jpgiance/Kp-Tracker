@@ -1,62 +1,69 @@
 package com.autonomy_lab.kptracker.ui.widget
 
-import android.util.Log
-import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
-import com.autonomy_lab.kptracker.data.network.PlanetaryKIndexListSchema
-import com.autonomy_lab.kptracker.data.network.toPlanetaryKIndexItemList
-import com.autonomy_lab.kptracker.di.ApplicationModule
-import kotlinx.coroutines.Dispatchers
+import android.content.Context
+import androidx.glance.appwidget.updateAll
+import com.autonomy_lab.kptracker.data.DataStoreManager
+import com.autonomy_lab.kptracker.data.models.SettingsData
+import dagger.hilt.EntryPoint
+import dagger.hilt.EntryPoints
+import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
+import dagger.hilt.components.SingletonComponent
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.withContext
-import kotlin.random.Random
+import javax.inject.Inject
 
-object KpRepo {
+class KpRepo @Inject constructor(
+    @ApplicationContext private val appContext: Context,
+    private val dataStoreManager: DataStoreManager
+) {
 
-    private val noaaApi = ApplicationModule().noaaApi(ApplicationModule().retrofit())
+    val _numb = MutableStateFlow<Int>(0)
+    val numb: StateFlow<Int> get() = _numb
 
-    private var _latestKpValue = MutableStateFlow<Double?>(null)
-    val latestKpValue: StateFlow<Double?> get() = _latestKpValue
+    @EntryPoint
+    @InstallIn(SingletonComponent::class)
+    interface KpRepoEntryPoint{
+        fun kpRepo(): KpRepo
+    }
 
-    private var _kpIndexList = MutableStateFlow<List<PlanetaryKIndexItem>>(emptyList())
-    val kpIndexList : StateFlow<List<PlanetaryKIndexItem>> get() = _kpIndexList
 
-    suspend fun fetchKpIndexList(){
-
-        withContext(Dispatchers.IO){
-
-            try {
-
-                val response = noaaApi.fetchLastKpData()
-
-                if (response.isSuccessful){
-
-                    val schema = response.body()?.let { PlanetaryKIndexListSchema(it) }
-
-                    _kpIndexList.value = schema?.toPlanetaryKIndexItemList() ?: emptyList()
-
-                    val latestItem: PlanetaryKIndexItem? = _kpIndexList.value.maxByOrNull { it.timeTag }
-
-                    _latestKpValue.value = latestItem?.kpIndex
-                }else{
-                    Log.e("TAG", "doWork: Error Fetching data: Response Unsuccessful"  )
-                }
-
-            }catch (e: Exception){
-                Log.e("TAG", "doWork: Error Fetching data: \n ${e.message}"  )
-            }
-
+    companion object{
+        fun get(applicationContext: Context): KpRepo{
+            val kpRepoEntryPoint: KpRepoEntryPoint =
+                EntryPoints.get(
+                    applicationContext,
+                    KpRepoEntryPoint::class.java,
+                )
+            return kpRepoEntryPoint.kpRepo()
         }
 
-    }
-
-    fun updateKpIndexFromViewModel(newKp: Double?){
-        _latestKpValue.value = newKp
 
     }
 
-     fun test(){
-        _latestKpValue.value = Random.nextDouble(1.0, 10.0)
+    suspend fun valueChanged(){
+        try {
+            KpTrackerWidget().updateAll(appContext)
+        }catch (_:Exception){}
 
     }
+
+    fun loadSettings(): Flow<SettingsData>{
+        return dataStoreManager.settingsState
+    }
+
+    fun isNotificationsEnable(): Boolean{
+        return dataStoreManager.settingsState.value.notificationsEnabled
+    }
+
+    fun notificationThreshold(): Double{
+        return dataStoreManager.settingsState.value.notificationThreshold
+    }
+
+    suspend fun incrementNumb(){
+        dataStoreManager.incrementWidgetTestInt()
+    }
+
+
 }
