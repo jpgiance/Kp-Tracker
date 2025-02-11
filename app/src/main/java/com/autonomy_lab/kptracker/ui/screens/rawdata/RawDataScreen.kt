@@ -19,7 +19,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.autonomy_lab.kptracker.MainViewModel
-import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
+import com.autonomy_lab.kptracker.data.models.PlanetaryKIndexItem
 import com.autonomy_lab.kptracker.ui.dialogs.InfoDialog
 import com.autonomy_lab.kptracker.ui.screens.main.MessageDisplay
 

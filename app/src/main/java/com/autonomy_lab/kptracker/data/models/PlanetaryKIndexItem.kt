@@ -1,6 +1,5 @@
-package com.autonomy_lab.kptracker.data
+package com.autonomy_lab.kptracker.data.models
 
-import co.yml.charts.common.model.Point
 import java.time.LocalDateTime
 
 data class PlanetaryKIndexItem(

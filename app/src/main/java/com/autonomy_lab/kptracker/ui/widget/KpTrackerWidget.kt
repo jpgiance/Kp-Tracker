@@ -36,7 +36,7 @@ import androidx.glance.layout.wrapContentHeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.autonomy_lab.kptracker.MainActivity
-import com.autonomy_lab.kptracker.data.SettingsData
+import com.autonomy_lab.kptracker.data.models.SettingsData
 import com.autonomy_lab.kptracker.ui.theme.WidgetGreen
 import com.autonomy_lab.kptracker.ui.theme.WidgetOrange
 import com.autonomy_lab.kptracker.ui.theme.WidgetRed
@@ -67,9 +67,7 @@ class KpTrackerWidget(
     override suspend fun provideGlance(context: Context, id: GlanceId) {
 
         val kpRepo = KpRepo.get(context)
-//        kpRepo.incrementNumb()
 
-        Log.e("TAG", "provideGlance: ", )
         provideContent {
             // create your AppWidget here
             MyContent(kpRepo)
@@ -79,8 +77,6 @@ class KpTrackerWidget(
 
     @Composable
     fun MyContent(kpRepo: KpRepo) {
-        Log.e("TAG", "MyContent: ", )
-
 
         val size = LocalSize.current
         val latestKp by KpReceiverRepo.latestKpValue.collectAsState()
@@ -192,7 +188,6 @@ class WidgetHelper @Inject constructor(private val context: Context){
 
     suspend fun updateKpWidget(){
         KpTrackerWidget().updateAll(context = context)
-        Log.e("TAG", "updateKpWidget: ", )
 
 //        val manager = GlanceAppWidgetManager(context)
 //        val widget = KpTrackerWidget()

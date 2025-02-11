@@ -1,19 +1,32 @@
 package com.autonomy_lab.kptracker
 
+import android.app.Activity
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.autonomy_lab.kptracker.data.DataStoreManager
 import com.autonomy_lab.kptracker.utils.InternetConnectionObserver
-import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
-import com.autonomy_lab.kptracker.data.SettingsData
+import com.autonomy_lab.kptracker.data.models.PlanetaryKIndexItem
+import com.autonomy_lab.kptracker.data.models.SettingsData
 import com.autonomy_lab.kptracker.data.network.PlanetaryKIndexListSchema
 import com.autonomy_lab.kptracker.data.network.toPlanetaryKIndexItemList
+import com.autonomy_lab.kptracker.data.states_models.TopBarState
 import com.autonomy_lab.kptracker.network.NoaaApi
 import com.autonomy_lab.kptracker.notifications.NotificationProvider
+import com.autonomy_lab.kptracker.ui.dialogs.SnackBarAction
+import com.autonomy_lab.kptracker.ui.dialogs.SnackBarController
+import com.autonomy_lab.kptracker.ui.dialogs.SnackBarEvent
+import com.autonomy_lab.kptracker.ui.navigation.HelpAndFeedbackRoute
+import com.autonomy_lab.kptracker.ui.navigation.MainScreenRoute
+import com.autonomy_lab.kptracker.ui.navigation.RawDataScreenRoute
+import com.autonomy_lab.kptracker.ui.navigation.SettingsScreenRoute
 import com.autonomy_lab.kptracker.ui.widget.KpReceiverRepo
 import com.autonomy_lab.kptracker.ui.widget.KpRepo
 import com.autonomy_lab.kptracker.ui.widget.WidgetHelper
+import com.google.android.play.core.review.ReviewException
+import com.google.android.play.core.review.ReviewManagerFactory
+import com.google.android.play.core.review.model.ReviewErrorCode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,7 +41,6 @@ import kotlin.random.Random
 @HiltViewModel
 class MainViewModel @Inject constructor(
     private val noaaApi: NoaaApi,
-    private val helper: WidgetHelper,
     private val kpRepo: KpRepo,
     private val notificationProvider: NotificationProvider,
     private val dataStoreManager: DataStoreManager,
@@ -44,8 +56,11 @@ class MainViewModel @Inject constructor(
     private var _kpIndexList = MutableStateFlow<List<PlanetaryKIndexItem>>(emptyList())
     val kpIndexList : StateFlow<List<PlanetaryKIndexItem>> get() = _kpIndexList
 
-    private var _refreshing = MutableStateFlow<Boolean>(false)
+    private var _refreshing = MutableStateFlow(false)
     val refreshing: StateFlow<Boolean> get() = _refreshing
+
+    private val _topBarState = MutableStateFlow(TopBarState())
+    val topBarState: StateFlow<TopBarState> get() = _topBarState
 
     val settingsState: StateFlow<SettingsData> = dataStoreManager.settingsState
 
@@ -91,6 +106,7 @@ class MainViewModel @Inject constructor(
                     KpReceiverRepo.updateKpIndexFromViewModel(latestItem?.kpIndex)
                     kpRepo.valueChanged()
 
+                    checkIfNotificationIsNeeded()
 
 //                    KpRepo.updateKpIndexFromViewModel(Random.nextDouble(90.0, 99.9))
 //                    helper.updateKpWidget()
@@ -111,13 +127,12 @@ class MainViewModel @Inject constructor(
     }
 
     private fun checkIfNotificationIsNeeded() {
-        alreadyCheckedIfNotificationNeeded = true
 
         if (settingsState.value.notificationsEnabled){
             latestKpValue.value.let { value ->
                 if (value != null) {
                     if (value >= settingsState.value.notificationThreshold){
-                        sendNotification(title = "Kp index Notification threshold met", message = "Kp index is $value")
+                        showSnackBar(message = "Notification Alert, Kp is $value", null)
                     }
                 }
             }
@@ -125,9 +140,92 @@ class MainViewModel @Inject constructor(
         }
     }
 
+    fun showSnackBar(message: String, action: SnackBarAction?) {
+
+        val defaultAction = SnackBarAction(
+            name = "Click me!",
+            action = {
+                SnackBarController.sendEvent(
+                    event = SnackBarEvent(
+                        message = "Action pressed!"
+                    )
+                )
+            }
+        )
+
+        val defaultDismissAction = SnackBarAction(
+            name = "Ok",
+            action = {}
+        )
+
+        viewModelScope.launch {
+            SnackBarController.sendEvent(
+                event = SnackBarEvent(
+                    message = message,
+                    action = action ?: defaultDismissAction
+                )
+            )
+        }
+    }
+
 
     fun sendNotification(title: String, message: String){
         notificationProvider.sendNotification(title, message)
+    }
+
+
+    fun updateTopBar(route: String?) {
+        _topBarState.value = when (route) {
+            "com.autonomy_lab.kptracker.ui.navigation.MainScreenRoute" -> TopBarState(
+                title = "Home",
+                isRefreshIconVisible = true
+            )
+            "com.autonomy_lab.kptracker.ui.navigation.SettingsScreenRoute" -> TopBarState(
+                title = "Settings",
+                isRefreshIconVisible = false
+            )
+            "com.autonomy_lab.kptracker.ui.navigation.RawDataScreenRoute" -> TopBarState(
+                title = "Raw Data",
+                isRefreshIconVisible = true
+            )
+            "com.autonomy_lab.kptracker.ui.navigation.HelpAndFeedbackRoute" -> TopBarState(
+                title = "Help And Feedback",
+                isRefreshIconVisible = false
+            )
+            else -> TopBarState() // Default empty state
+        }
+    }
+
+
+    fun showFeedBackDialog(context: Context, activity: Activity){
+
+
+        if (settingsState.value.testInt < 60) return
+
+        val manager = ReviewManagerFactory.create(context)
+
+        try {
+            val request = manager.requestReviewFlow()
+            request.addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    // We got the ReviewInfo object
+                    val reviewInfo = task.result
+
+                    val flow = manager.launchReviewFlow(activity, reviewInfo)
+                    flow.addOnCompleteListener { _ ->
+                        // The flow has finished. The API does not indicate whether the user
+                        // reviewed or not, or even whether the review dialog was shown. Thus, no
+                        // matter the result, we continue our app flow.
+                    }
+                } else {
+                    // There was some problem, log or handle the error code.
+                    @ReviewErrorCode val reviewErrorCode = (task.exception as ReviewException).errorCode
+                }
+            }
+        }catch (_: Exception){
+
+        }
+
     }
 
     fun test(){

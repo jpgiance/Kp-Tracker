@@ -25,15 +25,6 @@ class MyApplication() : Application(){
     override fun onCreate() {
         super.onCreate()
 
-        CoroutineScope(Dispatchers.IO).launch {
-
-            Log.e("TAG", "onCreate: isWorkerActive -> ${isWorkerActive(applicationContext, uniqueWorkName = "DataFetchWork" )}", )
-            Log.e("TAG", "onCreate: hasWorkWithTag -> ${hasWorkWithTag(applicationContext, tag = "My_worker" )}", )
-        }
-
-
-        Log.e("TAG", "onCreate: From Application" )
-
         scheduleUniquePeriodicWork()
 
     }

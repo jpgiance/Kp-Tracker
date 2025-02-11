@@ -3,7 +3,7 @@ package com.autonomy_lab.kptracker.ui.widget
 import android.content.Context
 import androidx.glance.appwidget.updateAll
 import com.autonomy_lab.kptracker.data.DataStoreManager
-import com.autonomy_lab.kptracker.data.SettingsData
+import com.autonomy_lab.kptracker.data.models.SettingsData
 import dagger.hilt.EntryPoint
 import dagger.hilt.EntryPoints
 import dagger.hilt.InstallIn
@@ -43,7 +43,10 @@ class KpRepo @Inject constructor(
     }
 
     suspend fun valueChanged(){
-        KpTrackerWidget().updateAll(appContext)
+        try {
+            KpTrackerWidget().updateAll(appContext)
+        }catch (_:Exception){}
+
     }
 
     fun loadSettings(): Flow<SettingsData>{

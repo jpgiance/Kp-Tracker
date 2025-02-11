@@ -8,8 +8,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
-import android.util.Log
-import android.view.RoundedCorner
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -26,15 +24,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RangeSlider
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -56,9 +50,6 @@ import com.autonomy_lab.kptracker.ui.components.UserInputDialog
 import com.autonomy_lab.kptracker.ui.dialogs.LocationPermissionTextProvider
 import com.autonomy_lab.kptracker.ui.dialogs.NotificationPermissionTextProvider
 import com.autonomy_lab.kptracker.ui.dialogs.PermissionDialog
-import com.autonomy_lab.kptracker.ui.theme.WidgetGreen
-import com.autonomy_lab.kptracker.ui.theme.WidgetOrange
-import com.autonomy_lab.kptracker.ui.theme.WidgetRed
 import com.autonomy_lab.kptracker.utils.roundToDecimal
 
 @Composable
@@ -134,10 +125,7 @@ fun SettingsScreen(
                 notificationsEnabled = settingsData.notificationsEnabled,
                 notificationThreshold = settingsData.notificationThreshold,
                 onNotificationsEnabledChange = {
-                    Log.e("TAG", "SettingsScreen: counter: ${settingsData.testInt}" )
-                    Log.e("TAG", "SettingsScreen: changed to $it" )
                     if (it){
-                        Log.e("TAG", "SettingsScreen: launching permissions" )
                         isNotificationPermissionPending.value = true
                         multiplePermissionResultLauncher.launch(permissionsToRequest)
 
@@ -365,7 +353,7 @@ fun WidgetSettings(
         }
         Spacer(modifier = Modifier.height(8.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("High Threshold: ")
+            Text("STORM Threshold: ")
             Box(
                 modifier = Modifier
                     .fillMaxWidth(),

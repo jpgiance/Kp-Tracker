@@ -1,7 +1,7 @@
 package com.autonomy_lab.kptracker.ui.widget
 
 import android.util.Log
-import com.autonomy_lab.kptracker.data.PlanetaryKIndexItem
+import com.autonomy_lab.kptracker.data.models.PlanetaryKIndexItem
 import com.autonomy_lab.kptracker.data.network.PlanetaryKIndexListSchema
 import com.autonomy_lab.kptracker.data.network.toPlanetaryKIndexItemList
 import com.autonomy_lab.kptracker.di.ApplicationModule

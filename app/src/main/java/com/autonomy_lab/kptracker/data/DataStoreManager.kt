@@ -8,18 +8,17 @@ import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
 import androidx.datastore.preferences.preferencesDataStore
 import com.autonomy_lab.kptracker.data.DataStoreManager.Companion.PREFERENCES_DATA_STORE_NAME
-import com.autonomy_lab.kptracker.data.SettingsData.Companion.notificationThresholdDefault
-import com.autonomy_lab.kptracker.data.SettingsData.Companion.notificationsEnabledDefault
-import com.autonomy_lab.kptracker.data.SettingsData.Companion.widgetThresholdHighDefault
-import com.autonomy_lab.kptracker.data.SettingsData.Companion.widgetThresholdLowDefault
+import com.autonomy_lab.kptracker.data.models.PreferenceKeys
+import com.autonomy_lab.kptracker.data.models.SettingsData
+import com.autonomy_lab.kptracker.data.models.SettingsData.Companion.notificationThresholdDefault
+import com.autonomy_lab.kptracker.data.models.SettingsData.Companion.notificationsEnabledDefault
+import com.autonomy_lab.kptracker.data.models.SettingsData.Companion.widgetThresholdHighDefault
+import com.autonomy_lab.kptracker.data.models.SettingsData.Companion.widgetThresholdLowDefault
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -103,7 +102,6 @@ class DataStoreManager(
     suspend fun incrementWidgetTestInt() {
         withContext(Dispatchers.IO) {
             dataStore.edit { preferences ->
-                Log.e("TAG", "incrementWidgetTestInt: yahoooooooooooooooooooo  counter = ${settingsState.value.testInt}   notf threshold = ${settingsState.value.notificationThreshold}", )
                 preferences[PreferenceKeys.testInt] =  settingsState.value.testInt + 1
             }
         }

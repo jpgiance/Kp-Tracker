@@ -16,7 +16,6 @@ class WidgetReceiver (): GlanceAppWidgetReceiver() {
         super.onEnabled(context)
 
         CoroutineScope(Dispatchers.IO).launch {
-            Log.e("TAG", "MyContent: Updating  widget from Receiver" )
 
 //            KpRepo.test()
             KpReceiverRepo.fetchKpIndexList()

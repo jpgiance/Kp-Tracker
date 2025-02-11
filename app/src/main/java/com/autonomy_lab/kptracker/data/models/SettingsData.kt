@@ -1,4 +1,4 @@
-package com.autonomy_lab.kptracker.data
+package com.autonomy_lab.kptracker.data.models
 
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.doublePreferencesKey

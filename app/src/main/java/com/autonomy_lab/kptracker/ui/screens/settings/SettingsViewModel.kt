@@ -1,17 +1,21 @@
 package com.autonomy_lab.kptracker.ui.screens.settings
 
+import android.app.Activity
 import android.content.Context
 import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.autonomy_lab.kptracker.data.DataStoreManager
-import com.autonomy_lab.kptracker.data.SettingsData
+import com.autonomy_lab.kptracker.data.models.SettingsData
 import com.autonomy_lab.kptracker.ui.dialogs.SnackBarAction
 import com.autonomy_lab.kptracker.ui.dialogs.SnackBarController
 import com.autonomy_lab.kptracker.ui.dialogs.SnackBarEvent
 import com.autonomy_lab.kptracker.ui.widget.KpRepo
 import com.autonomy_lab.kptracker.ui.widget.WidgetHelper
 import com.autonomy_lab.kptracker.utils.roundToDecimal
+import com.google.android.play.core.review.ReviewException
+import com.google.android.play.core.review.ReviewManagerFactory
+import com.google.android.play.core.review.model.ReviewErrorCode
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
@@ -20,7 +24,6 @@ import javax.inject.Inject
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val dataStoreManager: DataStoreManager,
-    private val helper: WidgetHelper,
     private val kpRepo: KpRepo
 ): ViewModel() {
 
@@ -72,6 +75,7 @@ class SettingsViewModel @Inject constructor(
             visiblePermissionDialogQueue.add(permission)
         }
     }
+
 
 
     fun showSnackBar() {

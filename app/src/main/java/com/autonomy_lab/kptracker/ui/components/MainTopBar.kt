@@ -17,12 +17,14 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.navigation.NavController
 import com.autonomy_lab.kptracker.R
 import com.autonomy_lab.kptracker.MainViewModel
 
@@ -34,6 +36,7 @@ fun MainTopBar(
     onDrawerIconClicked: () -> Unit
 ) {
 
+    val basState by mainViewModel.topBarState.collectAsStateWithLifecycle()
     val refreshing = mainViewModel.refreshing.collectAsStateWithLifecycle()
 
     TopAppBar(
@@ -43,7 +46,7 @@ fun MainTopBar(
             ){
 
                 Text(
-                    text = stringResource(id = R.string.app_name),
+                    text = basState.title,
                     color = Color.White
                 )
                 Spacer(modifier = Modifier.width(16.dp))
@@ -67,15 +70,18 @@ fun MainTopBar(
             }
         },
         actions = {
-            IconButton(
-                onClick = { mainViewModel.fetchKpIndexList()}
-            ) {
-                Icon(
-                    imageVector = Icons.Sharp.Refresh,
-                    contentDescription = "Localized description",
-                    tint = Color.White
-                )
+            if (basState.isRefreshIconVisible){
+                IconButton(
+                    onClick = { mainViewModel.fetchKpIndexList()}
+                ) {
+                    Icon(
+                        imageVector = Icons.Sharp.Refresh,
+                        contentDescription = "Localized description",
+                        tint = Color.White
+                    )
+                }
             }
+
         },
         colors = TopAppBarDefaults.topAppBarColors(Color.Black),
     )
